@@ -1,6 +1,6 @@
 # Cambios
 
-## 0.4.0
+## 0.4.1
 - «En palabras simples» al inicio de cada guía; la definición legal queda plegada.
 - «¿Qué te pasó?»: atajos y búsqueda por palabras (Yape, policía, cupos).
 - Aviso y bloqueo si se intenta generar un expediente sin relato ni evidencia.
