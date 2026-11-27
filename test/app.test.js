@@ -79,6 +79,23 @@ test("no redeclara globales reservadas del navegador (top, name, parent...)",()=
  for(const w of ["top","parent","self","name","status","length","location","history","event","close","open","stop"])
   assert.ok(!new RegExp(`(function\\s+${w}\\s*\\(|(const|let|var)\\s+${w}\\b)`).test(src),w);});
 
+test("v0.4: cada caso tiene explicación en palabras simples",()=>{
+ for(const id of IDS){const s=run(`CASES.${id}.simple`);assert.ok(s&&s.length>40);assert.ok(!/cohecho|concusi|ardid|agravante/i.test(s),id)}
+ run('S.view="guide";S.id="transito";S.tab=0;render()');assert.ok(els.app.innerHTML.includes("En palabras simples"));});
+
+test("v0.4: sugiere el caso según lo que escribe la persona",()=>{
+ const f=run("sugerirCaso");
+ assert.equal(f("Un policía me pidió plata")[0],"transito");assert.equal(f("me llaman para pedirme plata")[0],"extorsion");
+ assert.equal(f("me estafaron por Yape")[0],"estafa");assert.equal(f("mi esposo me golpea")[0],"familiar");assert.equal(f("hola").length,0);});
+
+test("v0.4: no genera expediente vacío y avisa",()=>{
+ run('S.id="familiar";S.files=[];S.form={};S.out=null');mk("rl").value="";mk("err");run("validar()");
+ assert.equal(run("S.out"),null);assert.match(els.err.textContent,/al menos una frase/);assert.equal(els.err.hidden,false);});
+
+test("v0.4: borrar todo limpia datos y vuelve al inicio",()=>{
+ run('S.id="familiar";S.form={rl:"x"};S.files=[{name:"a",h:"1"}];S.out={}');run("borrar()");
+ assert.equal(run("S.files.length"),0);assert.equal(run("S.out"),null);assert.equal(run("S.view"),"home");});
+
 test("manifest e íconos PWA válidos",()=>{
  const m=JSON.parse(fs.readFileSync(path.join(__dirname,"../manifest.json"),"utf8"));
  assert.equal(m.display,"standalone");
