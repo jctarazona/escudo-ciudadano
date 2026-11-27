@@ -1,4 +1,12 @@
-# Escudo Ciudadano – proyecto de app (PWA + Android/iOS)
+# Escudo Ciudadano v0.4.0 – proyecto de app (Node.js, PWA + Android/iOS)
+
+## Inicio rápido con Node.js (18 o superior)
+```
+npm test        # 20 pruebas de funcionalidad
+npm start       # servidor en http://localhost:8080  (otro puerto: PORT=3000 npm start)
+```
+En Windows PowerShell: `$env:PORT=3000; npm start`. Para detenerlo: Ctrl+C. No requiere `npm install`: el proyecto no tiene dependencias.
+
 
 Orientación y expediente sellado para denunciar abusos en el Perú (violencia familiar, coima en tránsito, extorsión, estafa, otros).
 Prototipo educativo: el contenido legal, los plazos y los teléfonos deben ser validados por abogados antes de un uso real.
@@ -12,7 +20,7 @@ Prototipo educativo: el contenido legal, los plazos y los teléfonos deben ser v
 ## Paso 1. Probar en tu computadora
 1. Instala Node.js (nodejs.org, versión LTS).
 2. En la carpeta del proyecto: `npm test`. Debes ver 12 pruebas en verde.
-3. `npm run serve` (usa Node, no Python) y abre http://localhost:8080 (el service worker funciona en localhost).
+3. `npm start` y abre http://localhost:8080 (el service worker funciona en localhost).
 
 ## Paso 2. Prueba manual (lista de verificación)
 - [ ] Inicio: se ven los 5 casos y el botón SOS (muestra 105 y 100).
