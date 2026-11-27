@@ -39,12 +39,26 @@ no:["No firmes documentos que no entiendas.","No te enfrentes físicamente a la 
 evid:["Documentos, resoluciones y actas","Fotos, audios o videos","Nombres, cargos y testigos","Fechas y lugares"],
 donde:["Defensoría del Pueblo","Fiscalía","Órgano de Control Institucional de la entidad"],
 extra:"Entidad o persona involucrada",riesgo:false}};
+const SIMPLE={familiar:"Si tu pareja o alguien de tu familia te golpea, te insulta, te amenaza, te obliga a algo sexual o te controla el dinero, eso es violencia. No es tu culpa y tienes derecho a protección.",
+transito:"Si un policía te pide plata para no ponerte una papeleta, eso es una coima. Pagarla también te puede traer problemas: lo correcto es pedir la papeleta y denunciar.",
+extorsion:"Si te amenazan para que entregues dinero o te cobran cupos, es extorsión. No pagues solo: guarda las pruebas y denuncia.",
+estafa:"Si te engañaron para quitarte dinero, por ejemplo con una venta falsa, una llamada o una transferencia que no hiciste, es una estafa. Actúa rápido: bloquea tus cuentas y reclama.",
+otro:"Si una autoridad o una persona te trató de forma injusta o violó tus derechos, puedes reclamar y denunciar."};
+for(const k in SIMPLE)CASES[k].simple=SIMPLE[k];
+const SIT=[["🚓 Un policía me pidió plata","transito"],["🏠 Mi pareja o familiar me agrede","familiar"],["📵 Me amenazan para que pague","extorsion"],["💳 Me estafaron (Yape, banco, compra)","estafa"],["⚖️ Otro abuso o injusticia","otro"]];
+const norm=t=>(t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function sugerirCaso(t){t=norm(t);const K={familiar:["pareja","esposo","conviviente","marido","golpe","pego","violencia","hijos","expareja","maltrat","insult"],transito:["policia","papeleta","coima","multa","transito","reten","mototaxi","licencia","brevete"],extorsion:["extors","cupo","amenaz","gota","plata","llaman","te matamos"],estafa:["estaf","yape","plin","transferenc","banco","compre","compra","tarjeta","phishing","falso","engan","clon"],otro:["abuso","discrimin","detenid","autoridad","injust"]};
+ return Object.entries(K).map(([k,ws])=>[k,ws.filter(w=>t.includes(w)).length]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).map(x=>x[0])}
+function sug(){const v=$("sit").value,r=sugerirCaso(v).slice(0,2);$("sugr").innerHTML=r.length?r.map(k=>`<button class="pri" style="width:100%;margin-top:8px" onclick="go('guide','${k}')">Ver guía: ${CASES[k].n}</button>`).join(""):(v.trim()?'<p class="mut">No encontré coincidencias. Elige una opción de la lista.</p>':"")}
+function escuchar(){try{const u=new SpeechSynthesisUtterance(CASES[S.id].simple);u.lang="es-PE";speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function validar(){grab();const e=$("err");if(!S.form.rl.trim()&&!S.files.length){e.hidden=false;e.textContent="Escribe al menos una frase de lo que pasó o agrega una evidencia.";if($("rl").focus)$("rl").focus();return}e.hidden=true;gen()}
+function borrar(){S.files.forEach(f=>f.url&&URL.revokeObjectURL(f.url));S.form={};S.files=[];S.out=null;S.id=null;go("home")}
 const S={view:"home",id:null,tab:0,form:{},files:[],out:null,disc:false};
 const $=s=>document.getElementById(s);
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const li=a=>"<ul>"+a.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>";
 function go(v,id){S.view=v;if(id)S.id=id;S.tab=0;render();window.scrollTo(0,0)}
-function topbar(back){return `<div class="top">${back?`<button onclick="go('home')" aria-label="Volver">← Inicio</button>`:`<span class="mut">Prototipo educativo</span>`}<span><button class="ghost" onclick="S.disc=true;render()" aria-label="Modo discreto">🙈</button> <button class="sos" onclick="sos()">SOS</button></span></div>`}
+function topbar(back){return `<div class="top">${back?`<button onclick="go('home')" aria-label="Volver">← Inicio</button>`:`<span class="mut">Prototipo</span>`}<span><button class="ghost" onclick="S.disc=true;render()" aria-label="Modo discreto">🙈 Discreto</button> <button class="sos" onclick="sos()">SOS</button></span></div>`}
 function render(){
  const a=$("app");
  if(S.disc){let v="0";a.innerHTML=`<div class="calc"><div class="d" id="cd">0</div>${["7","8","9","÷","4","5","6","×","1","2","3","−","C","0",".","="].map(k=>`<button onclick="cc('${k}')">${k}</button>`).join("")}</div><p class="mut" style="text-align:center">Pulsa C tres veces para volver</p>`;window._c=0;return}
@@ -53,13 +67,14 @@ function render(){
  if(S.view==="verify"){a.innerHTML=topbar(true)+`<h2>Verificar integridad</h2><p class="mut">Comprueba que un archivo no cambió desde que lo sellaste: compara su huella SHA-256 con la del expediente.</p><label for="vfile">Archivo</label><input type="file" id="vfile"><label for="vh">Huella SHA-256 registrada</label><input type="text" id="vh" placeholder="Pega aquí la huella"><div style="margin-top:12px"><button class="pri" style="width:100%" onclick="vf()">Verificar</button></div><div class="card" id="vr" aria-live="polite">Aún sin resultado.</div>`;return}
  if(S.view==="home"){a.innerHTML=topbar(false)+`<h1>Escudo Ciudadano</h1><p>Cuéntanos qué te pasó. Te explicamos qué es según la ley peruana, qué hacer ahora y armamos tu expediente para denunciar.</p>
  <div class="card warn"><b>¿Estás en peligro ahora?</b><p class="mut">Pulsa SOS para ver los números de emergencia.</p></div>
- <div class="grid">${Object.entries(CASES).map(([k,c])=>`<button class="case" onclick="go('guide','${k}')"><span class="e">${c.e}</span><span><b>${c.n}</b><span class="mut">${c.def.slice(0,70)}…</span></span></button>`).join("")}</div>
- <div class="card"><b>Herramientas</b><div class="grid" style="margin-top:8px"><button onclick="go('datos')">📋 Qué datos recoge la app</button><button onclick="go('verify')">🔍 Verificar integridad de un archivo</button></div></div><div class="card note"><b>Una sola vez</b><p class="mut">Tu relato se escribe una vez y se reutiliza para la denuncia, la fiscalía y las instituciones de apoyo. Nada sale de tu dispositivo: este prototipo no guarda ni envía datos.</p></div>
+ <div class="card"><b>¿Qué te pasó? Elige o cuéntalo con tus palabras</b><div class="chips">${SIT.map(x=>`<button onclick="go('guide','${x[1]}')">${x[0]}</button>`).join("")}</div><label for="sit">O escribe aquí</label><input type="text" id="sit" placeholder="Ej.: me llaman para pedirme plata" oninput="sug()"><div id="sugr" aria-live="polite"></div></div>
+ <h3>Todos los casos</h3><div class="grid">${Object.entries(CASES).map(([k,c])=>`<button class="case" onclick="go('guide','${k}')"><span class="e">${c.e}</span><span><b>${c.n}</b><span class="mut">${c.def.slice(0,70)}…</span></span></button>`).join("")}</div>
+ <div class="card"><b>Herramientas</b><div class="grid" style="margin-top:8px"><button onclick="go('datos')">📋 Qué datos recoge la app</button><button onclick="borrar()">🗑️ Borrar todo y salir</button><button onclick="go('verify')">🔍 Verificar integridad de un archivo</button></div></div><div class="card note"><b>Una sola vez</b><p class="mut">Tu relato se escribe una vez y se reutiliza para la denuncia, la fiscalía y las instituciones de apoyo. Nada sale de tu dispositivo: este prototipo no guarda ni envía datos.</p></div>
  <p class="mut">Orientación referencial. No reemplaza a un abogado; verifica la vigencia de normas y teléfonos.</p>`;return}
  const c=CASES[S.id];
  if(S.view==="guide"){
   const T=["Qué es","Qué hacer","Evidencia","Dónde"];
-  const P=[`<div class="card def"><b>Definición</b><p>${esc(c.def)}</p></div><h3>Base legal</h3>${li(c.ley)}`,
+  const P=[`<div class="card def"><b>En palabras simples</b><p>${esc(c.simple)}</p>${("speechSynthesis" in window)?`<button onclick="escuchar()">🔊 Escuchar</button>`:""}</div><details class="card"><summary><b>Definición legal</b></summary><p>${esc(c.def)}</p></details><h3>Base legal</h3>${li(c.ley)}`,
    `<h3>Haz esto</h3>${li(c.hacer)}<div class="card warn"><b>Evita esto</b>${li(c.no)}</div>`,
    `<h3>Reúne la evidencia</h3>${li(c.evid)}<p class="mut">En el siguiente paso puedes sellar tus archivos con una huella digital (SHA-256) que prueba que no cambiaron después.</p>`,
    `<h3>Dónde denunciar</h3>${li(c.donde)}<p class="mut">Confirma el canal y el teléfono vigente en la página oficial de la entidad.</p>`];
@@ -88,7 +103,7 @@ function render(){
   <li><b>Captura:</b> incluye número o nombre del contacto y la fecha; exporta también el chat completo.</li>
   <li><b>Documento:</b> conserva el original y fotografía todas las páginas.</li></ul>
   <p class="mut">Evita reenviar la evidencia por WhatsApp: comprime el archivo y cambia su huella.</p></details><div id="fls">${fileList()}</div>
-  <div style="margin-top:16px"><button class="pri" style="width:100%" onclick="gen()">Generar expediente sellado</button></div>`;return}
+  <div style="margin-top:16px"><p id="err" class="card warn" role="alert" hidden></p><button class="pri" style="width:100%" onclick="validar()">Generar expediente sellado</button><button style="width:100%;margin-top:8px" onclick="borrar()">🗑️ Borrar todo y salir</button></div>`;return}
  if(S.view==="out"){const o=S.out;
   a.innerHTML=topbar(true)+`<h2>Expediente listo</h2>
   <div class="card ${o.nivel==="ALTO"?"warn":o.nivel==="MEDIO"?"note":"def"}"><b>Prioridad: ${o.nivel}</b><p>${esc(o.msg)}</p></div>
@@ -97,7 +112,7 @@ function render(){
   <div class="card note"><b>Meta de seguimiento</b><p>${S.id==="familiar"?"Que la medida de protección esté dictada antes de: ":"Que tu denuncia tenga número de caso antes de: "}<b>${new Date(o.at+(o.nivel==="ALTO"?24:48)*36e5).toLocaleString("es-PE")}</b></p><p class="mut">${S.id==="familiar"?"Plazo referencial (Ley 30364 y D. Leg. 1470). Si se vence, insiste por escrito y acude a la Fiscalía o la Defensoría.":"Meta sugerida para no dejar enfriar el caso. Insiste por escrito si no te dan número."}</p></div><h3>Aviso a persona de confianza</h3><button style="width:100%" onclick="tc()">Copiar mensaje de aviso</button><h3>Ruta sugerida</h3>${c.hacer.map(h=>`<label class="chk"><input type="checkbox"> ${esc(h)}</label>`).join("")}
   <h3>Texto para presentar</h3><pre id="txt">${esc(o.txt)}</pre>
   <button class="pri" style="width:100%" onclick="cp()">Copiar texto</button><p class="mut" id="cpm"></p>
-  <button style="width:100%;margin-top:8px" onclick="go('build')">Editar datos</button>`;return}
+  <button style="width:100%;margin-top:8px" onclick="go('build')">Editar datos</button><button style="width:100%;margin-top:8px" onclick="borrar()">🗑️ Borrar todo y salir</button>`;return}
 }
 const ETIQ={foto:"Foto",video:"Video",audio:"Voz / audio",captura:"Captura de pantalla",documento:"Documento",otro:"Otro"},ICO={foto:"📷",video:"🎥",audio:"🎙️",captura:"💬",documento:"📄",otro:"📎"};
 function tipoEv(f){const m=f.type||"",n=(f.name||"").toLowerCase();if(m.startsWith("image/"))return"foto";if(m.startsWith("video/"))return"video";if(m.startsWith("audio/"))return"audio";if(m==="application/pdf"||/\.(pdf|docx?|xlsx?|txt)$/.test(n))return"documento";return"otro"}
